@@ -25,6 +25,10 @@ APlayerChar::APlayerChar()
 void APlayerChar::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//Sets a repeating timer to call DecreaseStats() every 2 seconds
+	FTimerHandle StatsTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(StatsTimerHandle, this, &APlayerChar::DecreaseStats, 2.0f, true);
 	
 }
 
@@ -81,5 +85,52 @@ void APlayerChar::StopJump()
 
 void APlayerChar::FindObject()
 {
+}
+
+//sets the players health ensuring it doesnt exceed 100
+void APlayerChar::SetHealth(float amount)
+{
+	if (Health + amount < 100)
+	{
+		Health = Health + amount;
+	}
+}
+
+//sets the players hungers ensuring it doesnt exceed 100
+void APlayerChar::SetHunger(float amount)
+{
+	if (Hunger + amount < 100)
+	{
+		Hunger = Hunger + amount;
+	}
+
+}
+
+//sets the players stamina ensuring it doesnt exceed 100
+void APlayerChar::SetStamina(float amount)
+{
+	if (Stamina + amount <= 100)
+	{
+		Stamina = Stamina + amount;
+	}
+}
+
+//called periodically to reduce stats over time and simulate survival mechanics
+void APlayerChar::DecreaseStats()
+{
+	//decrease hunger by 1 if there is any hunger left
+	if (Hunger > 0)
+	{
+		SetHunger(-1.0f);
+	}
+	
+	//restore stamina by 10 every cycle
+	SetStamina(10.0f);
+
+	//if hunger has delpleted, reduce health to simulate starvation 
+	if (Hunger <= 0)
+	{
+		SetHealth(-3.0f);
+	}
 }
 

@@ -51,5 +51,33 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* PlayerCamComp;
 
+	//Players current health value; decreases when taking damage and may affect survival 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Health = 100.0f;
+	
+	//Players hunger level; can decrease over time and may impact stamina or health
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Hunger = 100.0f;
+
+	//Players stamina level; used for actions like sprinting or jumping, rebuilds overtime
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Stamina = 100.0f;
+
+	//set the players health to a specfied amount
+	UFUNCTION(BlueprintCallable)
+	void SetHealth(float amount);
+
+	//set the players hunger to a specified amount
+	UFUNCTION(BlueprintCallable)
+	void SetHunger(float amount);
+
+	//set the players stamina to a specified amount
+	UFUNCTION(BlueprintCallable)
+	void SetStamina(float amount);
+
+	//decreases the players stats overtime based on conditions (e.g. actions taken, time passed)
+	UFUNCTION()
+	void DecreaseStats();
 
 };
+
