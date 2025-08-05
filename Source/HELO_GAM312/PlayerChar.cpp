@@ -18,6 +18,15 @@ APlayerChar::APlayerChar()
 	//Share rotation with controller
 	PlayerCamComp->bUsePawnControlRotation = true;
 
+	//Set the size of the ResourcesArray to hold 3 elements (e.g., placeholders for resource counts or names)
+	ResourcesArray.SetNum(3);
+
+	//Add the names of the available resources to the ResourcesNameArray
+	ResourcesNameArray.Add(TEXT("Wood"));
+	ResourcesNameArray.Add(TEXT("Stone"));
+	ResourcesNameArray.Add(TEXT("Berry"));
+
+
 
 }
 
@@ -59,32 +68,66 @@ void APlayerChar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerChar::MoveForward(float axisValue)
 {
-	// Calculate forward direction based on the controller's rotation and move the character in that direction
-	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X);
+	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::X); // Calculate forward direction based on the controller's rotation and move the character in that direction
 	AddMovementInput(Direction, axisValue);
 }
 
 void APlayerChar::MoveRight(float axisValue)
 {
-	// Calculate right direction based on the controller's rotation and move the character right/left
-	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y);
+	FVector Direction = FRotationMatrix(Controller->GetControlRotation()).GetScaledAxis(EAxis::Y); // Calculate right direction based on the controller's rotation and move the character right/left
 	AddMovementInput(Direction, axisValue);
 }
 
 void APlayerChar::StartJump()
 {
-	// Trigger the character's jump by setting the jump flag to true
-	bPressedJump = true;
+	bPressedJump = true; // Trigger the character's jump by setting the jump flag to true
 }
 
 void APlayerChar::StopJump()
 {
-	// Stop the character's jump by clearing the jump flag to false
-	bPressedJump = false;
+	bPressedJump = false; // Stop the character's jump by clearing the jump flag to false
 }
 
 void APlayerChar::FindObject()
 {
+	
+	FHitResult HitResult;  //Stores information about the result of a line trace (hit detection)
+	FVector StartLocation = PlayerCamComp->GetComponentLocation(); //Get the starting point of the line trace from the player's camera location
+	FVector Direction = PlayerCamComp->GetForwardVector() * 800.0f; //Get the forward direction from the player's camera and multiply by 800 units for trace distance
+	FVector EndLocation = StartLocation + Direction; //Calculate the end point of the line trace by adding the direction to the start location
+	
+	FCollisionQueryParams QueryParams; //Create a collision query parameter object to configure the line trace behavior
+	QueryParams.AddIgnoredActor(this); //Ignore the actor that owns this code (usually the player) to prevent self-collision during the trace
+	QueryParams.bTraceComplex = true; //Enable complex collision checking (uses triangle meshes instead of simple collision shapes)
+	QueryParams.bReturnFaceIndex = true; //Return the face index of the triangle that was hit (useful for advanced hit detection or effects)
+
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, QueryParams)) //Perform a line trace (raycast) from the player's camera forward to detect visible objects
+	{
+		AResource_M* HitResource = Cast<AResource_M>(HitResult.GetActor()); //Try to cast the hit actor to a resource object (AResource_M)
+
+		if (HitResource)
+		{
+			FString hitName = HitResource->resourceName; //Get the name of the resource hit
+			int resourceValue = HitResource->resourceAmount; // Get how much of the resource is available to collect 
+
+			HitResource->totalResource = HitResource->totalResource - resourceValue; //Subtract the collected amount from the total available resource
+
+			if (HitResource->totalResource > resourceValue)  //If the resource still has more than the collectible amount, give it to the player
+			{
+				GiveResource(resourceValue, hitName); //Add the resource to the player's inventory
+
+				check(GEngine != nullptr);  //Ensure GEngine is valid before trying to display a debug message
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Collected")); //Display a debug message on screen indicating resource collection
+			}
+			else  //If the resource has been fully collected or is below the collectible amount
+			{
+				HitResource->Destroy();  //Remove the resource actor from the world
+				check(GEngine != nullptr);  //Ensure the engine exists before displaying a debug message
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Depleted")); //Display a debug message on screen indicating the resource is depleted
+			}
+		}
+	}
 }
 
 //sets the players health ensuring it doesnt exceed 100
@@ -131,6 +174,24 @@ void APlayerChar::DecreaseStats()
 	if (Hunger <= 0)
 	{
 		SetHealth(-3.0f);
+	}
+}
+
+void APlayerChar::GiveResource(float amount, FString resourceType)
+{
+	if (resourceType == "Wood")  //Add amount to the corresponding resource in ResourcesArray based on the type
+	{
+		ResourcesArray[0] = ResourcesArray[0] + amount;  //Index 0 = Wood
+	}
+
+	if (resourceType == "Stone")
+	{
+		ResourcesArray[1] = ResourcesArray[1] + amount; //Index 1 = Stone
+	}
+
+	if (resourceType == "Berry")
+	{
+		ResourcesArray[2] = ResourcesArray[2] + amount; //Index 2 = Berry
 	}
 }
 

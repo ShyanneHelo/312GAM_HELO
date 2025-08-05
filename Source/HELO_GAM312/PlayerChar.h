@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
+#include "Resource_M.h"
 #include "PlayerChar.generated.h"
 
 UCLASS()
@@ -63,6 +64,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	float Stamina = 100.0f;
 
+	//Amount of wood the player has(used for crafting or building)
+	UPROPERTY(EditAnywhere, Category = "Resources")
+	int Wood;
+
+	//Amount of stone the player has(used for crafting or building)
+	UPROPERTY(EditAnywhere, Category = "Resources")
+	int Stone;
+
+	//Number of berries collected(could be used for eating or crafting)
+	UPROPERTY(EditAnywhere, Category = "Resources")
+	int Berry;
+
+	//Array storing the actual list of resources the player has collected (e.g., "Wood", "Stone", "Berry")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resources")
+	TArray<int> ResourcesArray;
+
+	//Array containing the names of available resources (e.g., "Wood", "Stone", "Berry")
+	UPROPERTY(EditAnywhere, Category = "Resources")
+	TArray<FString> ResourcesNameArray;
+
 	//set the players health to a specfied amount
 	UFUNCTION(BlueprintCallable)
 	void SetHealth(float amount);
@@ -79,5 +100,7 @@ public:
 	UFUNCTION()
 	void DecreaseStats();
 
+	UFUNCTION()
+	void GiveResource(float amount, FString resourceType);
 };
 
