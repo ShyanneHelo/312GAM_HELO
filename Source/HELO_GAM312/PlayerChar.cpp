@@ -106,25 +106,35 @@ void APlayerChar::FindObject()
 	{
 		AResource_M* HitResource = Cast<AResource_M>(HitResult.GetActor()); //Try to cast the hit actor to a resource object (AResource_M)
 
-		if (HitResource)
+		if (Stamina > 5.0f)
 		{
-			FString hitName = HitResource->resourceName; //Get the name of the resource hit
-			int resourceValue = HitResource->resourceAmount; // Get how much of the resource is available to collect 
 
-			HitResource->totalResource = HitResource->totalResource - resourceValue; //Subtract the collected amount from the total available resource
-
-			if (HitResource->totalResource > resourceValue)  //If the resource still has more than the collectible amount, give it to the player
+			if (HitResource) 
 			{
-				GiveResource(resourceValue, hitName); //Add the resource to the player's inventory
+				FString hitName = HitResource->resourceName; //Get the name of the resource hit
+				int resourceValue = HitResource->resourceAmount; // Get how much of the resource is available to collect 
 
-				check(GEngine != nullptr);  //Ensure GEngine is valid before trying to display a debug message
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Collected")); //Display a debug message on screen indicating resource collection
-			}
-			else  //If the resource has been fully collected or is below the collectible amount
-			{
-				HitResource->Destroy();  //Remove the resource actor from the world
-				check(GEngine != nullptr);  //Ensure the engine exists before displaying a debug message
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Depleted")); //Display a debug message on screen indicating the resource is depleted
+				HitResource->totalResource = HitResource->totalResource - resourceValue; //Subtract the collected amount from the total available resource
+
+				if (HitResource->totalResource > resourceValue)  //If the resource still has more than the collectible amount, give it to the player
+				{
+					GiveResource(resourceValue, hitName); //Add the resource to the player's inventory
+
+					check(GEngine != nullptr);  //Ensure GEngine is valid before trying to display a debug message
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Collected")); //Display a debug message on screen indicating resource collection
+
+					UGameplayStatics::SpawnDecalAtLocation(GetWorld(), hitDecal, FVector(10.0f, 10.0f, 10.0f), HitResult.Location, FRotator(-90, 0, 0), 2.0f);  //Spawn a decal at the hit location (e.g., a visual mark on the surface that was hit)
+
+					SetStamina(-5.0f);  //Reduce the player's stamina by 5 when performing the action (e.g., harvesting)
+
+				}
+				else  //If the resource has been fully collected or is below the collectible amount
+				{
+					HitResource->Destroy();  //Remove the resource actor from the world
+					check(GEngine != nullptr);  //Ensure the engine exists before displaying a debug message
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Resource Depleted")); //Display a debug message on screen indicating the resource is depleted
+
+				}
 			}
 		}
 	}

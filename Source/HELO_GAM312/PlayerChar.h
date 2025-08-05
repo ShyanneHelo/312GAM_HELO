@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "Resource_M.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerChar.generated.h"
 
 UCLASS()
@@ -83,6 +84,9 @@ public:
 	//Array containing the names of available resources (e.g., "Wood", "Stone", "Berry")
 	UPROPERTY(EditAnywhere, Category = "Resources")
 	TArray<FString> ResourcesNameArray;
+
+	UPROPERTY(EditAnywhere, Category = "HitMarker")
+	UMaterialInterface* hitDecal;  //Material used to visually mark where a hit occurred (e.g., decal on surface)
 
 	//set the players health to a specfied amount
 	UFUNCTION(BlueprintCallable)
