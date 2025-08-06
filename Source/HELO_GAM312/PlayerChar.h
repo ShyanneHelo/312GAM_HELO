@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Resource_M.h"
 #include "Kismet/GameplayStatics.h"
+#include "BuildingPart.h"
 #include "PlayerChar.generated.h"
 
 UCLASS()
@@ -88,6 +89,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "HitMarker")
 	UMaterialInterface* hitDecal;  //Material used to visually mark where a hit occurred (e.g., decal on surface)
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building Supplies")
+	TArray<int> BuildingArray;  // Exposes an editable array of integers in the editor and Blueprints, categorized under "Building Supplies"
+
+	UPROPERTY()
+	bool isBuilding;  // A boolean flag to track whether the player is currently building; not exposed to editor or Blueprints
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<ABuildingPart> BuildPartClass;  // Allows setting a default building part class (e.g., wall, floor) in the editor or Blueprints; cannot be changed at runtime
+
+	UPROPERTY()
+	ABuildingPart* spawnedPart;  // Pointer to the most recently spawned building part; hidden from editor and Blueprints
+
 	//set the players health to a specfied amount
 	UFUNCTION(BlueprintCallable)
 	void SetHealth(float amount);
@@ -106,5 +119,16 @@ public:
 
 	UFUNCTION()
 	void GiveResource(float amount, FString resourceType);
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateResources(float woodAmount, float stoneAmount, FString buildingObject); // Exposes this function to Blueprints, allowing you to update resource values from within BP scripts
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnBuilding(int buildingID, bool& isSuccess); // Exposes this function to Blueprints; spawns a building by ID and returns success through a reference variable
+
+	UFUNCTION()
+	void RotateBuilding(); // Not exposed to Blueprints; rotates the current building (likely for internal logic or input events)
+
+
 };
 
