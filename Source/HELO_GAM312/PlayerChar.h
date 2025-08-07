@@ -8,6 +8,7 @@
 #include "Resource_M.h"
 #include "Kismet/GameplayStatics.h"
 #include "BuildingPart.h"
+#include "PlayerWidget.h"
 #include "PlayerChar.generated.h"
 
 UCLASS()
@@ -100,6 +101,9 @@ public:
 
 	UPROPERTY()
 	ABuildingPart* spawnedPart;  // Pointer to the most recently spawned building part; hidden from editor and Blueprints
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPlayerWidget* playerUI; // Reference to the player's UI widget
 
 	//set the players health to a specfied amount
 	UFUNCTION(BlueprintCallable)
